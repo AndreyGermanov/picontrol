@@ -10,7 +10,7 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-    <table style="border-collapse: collapse;border-width:1px;border-color:black;border-style:solid">
+    <table>
         <tr>
             <th>Temperature</th>
             <td id="temperatureCol">&nbsp;</td>
@@ -20,21 +20,21 @@
             <td id="humidityCol">&nbsp;</td>
         </tr>
     </table>
-<script>
-    function getTemperature() {
-        $.ajax("/cgi-bin/picontrol.cgi?temperature",{
-            success: (data) => { $('#temperatureCol').text(data);}
+    <script>
+        function getTemperature() {
+            $.ajax("/cgi-bin/picontrol.cgi?temperature",{
+                success: (data) => { $('#temperatureCol').text(data);}
+            })
+        }
+        function getHumidity() {
+            $.ajax("/cgi-bin/picontrol.cgi?humidity",{
+                success: (data) => { $('#humidityCol').text(data);}
+            })
+        }
+        $(document).ready(function() {
+            getTemperature();
+            getHumidity();
         })
-    }
-    function getHumidity() {
-        $.ajax("/cgi-bin/picontrol.cgi?humidity",{
-            success: (data) => { $('#humidityCol').text(data);}
-        })
-    }
-    $(document).ready(function() {
-        getTemperature();
-        getHumidity();
-    })
-</script>
+    </script>
 </body>
 </html>

@@ -14,28 +14,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-/**
- * Process HTTP command, passed via query string. (Sends command to PLC via TCP server process)
- * @param cmd - Command to process
- * @param result - Result of command execution as a string
- */
-void send_tcp_command(const char* cmd, char* result) {
-    struct sockaddr_in local;
-    int s = socket(AF_INET,SOCK_STREAM,0);
-    inet_aton("0.0.0.0",&local.sin_addr);
-    local.sin_port = htons(9000);
-    local.sin_family = AF_INET;
-    connect(s,(struct sockaddr*)&local,sizeof(local));
-    char buf[BUFSIZ];
-    write(s,cmd,strlen(cmd)+1);
-    while (1) {
-        int cnt = read(s,result,sizeof(buf)+1);
-        if (cnt>0) {
-            break;
-        }
-    }
-    close(s);
-}
+void send_tcp_command(const char* cmd, char* result);
 
 /**
  * Main function which implements CGI protocol: receives HTTP request, and sends response to stdout.
@@ -60,4 +39,27 @@ int main() {
         printf("\n");
     }
     return 0;
+}
+
+/**
+ * Process HTTP command, passed via query string. (Sends command to PLC via TCP server process)
+ * @param cmd - Command to process
+ * @param result - Result of command execution as a string
+ */
+void send_tcp_command(const char* cmd, char* result) {
+    struct sockaddr_in local;
+    int s = socket(AF_INET,SOCK_STREAM,0);
+    inet_aton("0.0.0.0",&local.sin_addr);
+    local.sin_port = htons(9000);
+    local.sin_family = AF_INET;
+    connect(s,(struct sockaddr*)&local,sizeof(local));
+    char buf[BUFSIZ];
+    write(s,cmd,strlen(cmd)+1);
+    while (1) {
+        int cnt = read(s,result,sizeof(buf)+1);
+        if (cnt>0) {
+            break;
+        }
+    }
+    close(s);
 }

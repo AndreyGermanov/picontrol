@@ -13,6 +13,7 @@ PLC controller based on Raspberry PI.
 
 * Raspbian Linux
 * WiringPI C library
+* Posix Threading C library
 * Optional: Web server with CGI support (to access data via HTTP using CGI script)
 
 ## Installation
