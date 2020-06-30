@@ -3,5 +3,6 @@
 
 void send_plc_command(const char* cmd, char* result);
 void* process_client_request(void *arg);
+void daemonize();
 
-#endif //PICONTROL_TCP_SERVER_H
+#endif

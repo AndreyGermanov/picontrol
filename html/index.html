@@ -34,7 +34,11 @@
         $(document).ready(function() {
             getTemperature();
             getHumidity();
-        })
+        });
+        setInterval(function() {
+            getTemperature();
+            getHumidity();
+        },1000);
     </script>
 </body>
 </html>

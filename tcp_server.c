@@ -13,30 +13,28 @@
 #include <stdlib.h>
 #include <sys/un.h>
 #include "tcp_server.h"
+#include "args.h"
 
 /**
  * Starts main tcp server process, receives commands from clients
  * and sends results
  * @return
  */
-int main() {
-    int pid = fork();
+int main(int argc,char* argv[]) {
+    parseArgs(argc,argv);
+    int pid = 0;
+    if (is_daemon()) { pid = fork();}
     if (pid == 0) {
-
-        chdir("/");
-        setsid();
-        close(stdin);
-        close(stdout);
-        close(stderr);
+        if (is_daemon()) { daemonize(); }
         struct sockaddr_in local;
         int ss = socket(AF_INET, SOCK_STREAM, 0);
         int cs;
         inet_aton("0.0.0.0", &local.sin_addr);
-        local.sin_port = htons(9000);
+        local.sin_port = htons(get_port_number());
         local.sin_family = AF_INET;
         bind(ss, (struct sockaddr *) &local, sizeof(local));
         listen(ss, 5000);
-        printf("Server is listening on port 9000\n");
+        printf("Server is listening on port %d\n",get_port_number());
         while (1) {
             cs = accept(ss, NULL, NULL);
             pthread_t thread;
@@ -44,6 +42,17 @@ int main() {
         }
     }
     return 0;
+}
+
+/**
+ * Function puts process to daemon mode
+ */
+void daemonize() {
+    chdir("/");
+    setsid();
+    close(stdin);
+    close(stdout);
+    close(stderr);
 }
 
 /**
@@ -76,7 +85,7 @@ void send_plc_command(const char* cmd, char* result) {
     int s = socket(AF_UNIX,SOCK_STREAM,0);
     struct sockaddr_un addr;
     addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, "/tmp/plc", sizeof(addr.sun_path)-1);
+    strncpy(addr.sun_path, get_unix_socket_path(), sizeof(addr.sun_path)-1);
     connect(s,(struct sockaddr*)&addr,sizeof(addr));
     char buf[BUFSIZ];
     write(s,cmd,strlen(cmd)+1);

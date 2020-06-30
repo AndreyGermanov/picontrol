@@ -5,5 +5,6 @@ float get_temperature();
 float get_humidity();
 void* process_client_request(void*);
 void* run_socket_server(void*);
+void daemonize();
 
-#endif //PICONTROL_PLC_H
+#endif

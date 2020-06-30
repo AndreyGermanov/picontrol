@@ -17,7 +17,9 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <sys/un.h>
+#include <unistd.h>
 #include "plc.h"
+#include "args.h"
 
 float temperature = 0;
 float humidity = 0;
@@ -27,14 +29,15 @@ float humidity = 0;
  * these values to /tmp/temperature and /tmp/humidity files
  * @return
  */
-int main() {
-    int pid = fork();
+int main(int argc,char* argv[]) {
+    parseArgs(argc,argv);
+
+    int pid = 0;
+    if (is_daemon()) {
+        pid = fork();
+    }
     if (pid == 0) {
-        chdir("/");
-        setsid();
-        close(stdin);
-        close(stdout);
-        close(stderr);
+        if (is_daemon()) { daemonize(); }
         pthread_t thread;
         pthread_create(&thread,NULL,run_socket_server,NULL);
         printf("PLC is running. PID: %d\n",getpid());
@@ -47,6 +50,17 @@ int main() {
 }
 
 /**
+ * Function puts process to daemon mode
+ */
+void daemonize() {
+    chdir("/");
+    setsid();
+    close(stdin);
+    close(stdout);
+    close(stderr);
+}
+
+/**
  * Function used to run Unix domain socket server in background thread to receive requests
  * from external clients
  * @return
@@ -55,9 +69,9 @@ void* run_socket_server(void *arg) {
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
     int cs;
     struct sockaddr_un addr;
-    remove("/tmp/plc");
+    remove(get_unix_socket_path());
     addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, "/tmp/plc", sizeof(addr.sun_path)-1);
+    strncpy(addr.sun_path, get_unix_socket_path(), sizeof(addr.sun_path)-1);
     bind(fd, (struct sockaddr*)&addr, sizeof(addr));
     listen(fd, 500);
     while (1) {
